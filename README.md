@@ -66,12 +66,128 @@ To write a program for Frequency Modulation and Demodulation using SCILAB and to
 <img width="512" height="365" alt="image" src="https://github.com/user-attachments/assets/dfe6bc64-2b6f-4afa-ae79-95391859ab04" />
 
 ## PROGRAM
+clc;
+
+clear;
+
+am = 7.5;
+
+fm = 217.9;
+
+fs = 21790;
+
+t = 0:1/fs:10/fm;
+
+ac = 15;
+
+fc = 2179;
+
+beta = 5;
+
+msg = am * sin(2 * %pi * fm * t);
+
+car = ac * cos(2 * %pi * fc * t);
+
+sFM = ac * cos(2 * %pi * fc * t + beta * sin(2 * %pi * fm * t));
+
+z = hilbert(sFM);
+
+dz = [diff(z) 0];
+
+inst_omega = imag(dz ./ z);
+
+f_inst = (fs / (2 * %pi)) * inst_omega;
+
+dev = f_inst - fc;
+
+wc = fm / (fs / 2);
+
+if wc > 0.49 then wc = 0.49; end
+
+n = 200;
+
+h = wfir("lp", n + 1, wc, "hm", 0);
+
+N = length(dev);
+
+L = length(h);
+
+nf = 3 * (L - 1);
+
+if nf > N - 1 then nf = N - 1; end
+
+if nf < 1 then
+
+    y = filter(h, 1, dev);
+    
+    demod = y(1:N);
+    
+else
+    xp = [dev(nf+1:-1:2), dev, dev($:-1:$-nf)];
+    
+    y1 = filter(h, 1, xp);
+    
+    y2 = filter(h, 1, y1($:-1:1));
+    
+    y2 = y2($:-1:1);
+    
+    demod = y2(nf+1:nf+N);
+end
+
+demod = demod / max(abs(demod)) * am;
+
+subplot(4,1,1);
+
+plot(t, msg);
+
+title("Message-Signal");
+
+xlabel("Time - (s)");
+
+ylabel("Amplitude");
+
+subplot(4,1,2);
+
+plot(t, car);
+
+title("Carrier-Signal");
+
+xlabel("Time - (s)");
+
+ylabel("Amplitude");
+
+subplot(4,1,3);
+
+plot(t, sFM);
+
+title("FM-Modulated-Signal");
+
+xlabel("Time - (s)");
+
+ylabel("Amplitude");
+
+subplot(4,1,4);
+
+plot(t, demod);
+
+title("Demodulated-Signal (Zero-phase)");
+
+xlabel("Time - (s)");
+
+ylabel("Amplitude");
+
 
 ## TABULATION
+<img width="507" height="501" alt="image" src="https://github.com/user-attachments/assets/387c6e0e-f4e8-4c13-8910-fca11c35e692" />
+
 
 ## CALCULATION
+<img width="437" height="304" alt="image" src="https://github.com/user-attachments/assets/e4787eb8-7ef4-4f19-8614-ba339144b5af" />
+
 
 ## OUTPUT
+![WhatsApp Image 2025-11-20 at 08 27 27_afc62230](https://github.com/user-attachments/assets/a4cab604-b0cf-4783-ab2f-c15c5705345f)
+
 
 ## RESULT
-
+Thus the frequency modulation and demodulation is successfully done and the output is experimentally verified.
